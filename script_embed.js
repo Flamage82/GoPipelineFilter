@@ -26,7 +26,6 @@ function toggle(event) {
     var isVisible = jQuery('div', item).is(':visible');
     jQuery('h2', item).text(function(index, text) {
         var pipelineName = text.substring(2);
-        setStorageValue(pipelineName, isVisible);
         if (isVisible) {
 		    collapse(item);
 		} else {
@@ -71,6 +70,7 @@ function collapse(item) {
     item.children('div').hide();
     jQuery('h2', item).text(function(index, text) {
         var pipelineName = text.substring(2);
+        setStorageValue(pipelineName, true);
         return '+ ' + pipelineName; 
     });
 };
@@ -79,6 +79,7 @@ function expand(item) {
     item.children('div').show();
     jQuery('h2', item).text(function(index, text) {
         var pipelineName = text.substring(2);
+        setStorageValue(pipelineName, false);
         return '− ' + pipelineName; 
     });
 };
