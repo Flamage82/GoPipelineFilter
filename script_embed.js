@@ -50,18 +50,14 @@ function toggleFilter(event) {
 
 function getStorageValue(key) {
     if (pipelines[key] === undefined) {
-    	window.postMessage({ type: "getStorageValue", key: key }, "*");
-        return false;
-    } else {
-        return pipelines[key];
+        pipelines[key] = true;
     }
+    return pipelines[key];
 }
 
 function setStorageValue(key, value) {
     if (value !== pipelines[key]) {
         pipelines[key] = value;
-        var object = {};
-        object[key] = value;
         window.postMessage({ type: "setStorageValue", key: key, value: value }, "*");
     }
 }
@@ -138,25 +134,30 @@ function addCollapsingGroups() {
     });
 }
 
-(function() { 
-    window.addEventListener("message", function(event) {
-        if (event.source != window) {
-            return;
+window.addEventListener("message", function(event) {
+    if (event.source != window) {
+        return;
+    }
+
+    if (!event.data.type) {
+        return;
+    }
+
+    if (event.data.type === "init") {
+        window.postMessage({ type: "getStorageValues" }, "*");
+    }
+
+    if (event.data.type === "retrievedStorageValues") {
+        for (var value in event.data.values) {
+            pipelines[value] = event.data.values[value];
         }
+    	
+        addCollapsingGroups();
+    }
+});
 
-        if (event.data.type && (event.data.type == "retrievedStorageValue")) {
-        	var value = event.data.value;
-        	if (value === undefined) {
-        		value = false;
-        	}
-        	pipelines[event.data.key] = value;
-            addCollapsingGroups();
-        }
-    });
-
-    jQuery(document).bind("dashboard-refresh-completed", function(e, notModified) {
-		addCollapsingGroups();
-	});
-
+jQuery(document).bind("dashboard-refresh-completed", function(e, notModified) {
 	addCollapsingGroups();
-})(); 
+});
+
+window.postMessage({ type: "getStorageValues" }, "*");
